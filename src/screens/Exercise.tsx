@@ -23,14 +23,14 @@ export function Exercise() {
         </TouchableOpacity>
 
         <HStack justifyContent="space-between" mt={4} mb={8} alignItems="center">
-          <Heading color="gray.100" fontSize="lg" flexShrink={1}>Puxada frontal</Heading>
+          <Heading color="gray.100" fontSize="lg" flexShrink={1} fontFamily="heading">Puxada frontal</Heading>
           <HStack alignItems="center">
             <BodySvg />
             <Text color="gray.200" ml={1} textTransform="capitalize">Costas</Text>
           </HStack>
         </HStack>
       </VStack>
-      
+
       <ScrollView>
         <VStack p={8}>
           <Image w="full"
@@ -55,7 +55,7 @@ export function Exercise() {
             </HStack>
             <Button title="Marcar como concluído" />
           </Box>
-          
+
         </VStack>
       </ScrollView>
     </VStack>

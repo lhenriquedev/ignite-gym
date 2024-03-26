@@ -20,7 +20,7 @@ export function ExerciseCard({ ...rest }: ExerciseCardProps) {
         />
 
         <VStack flex={1}>
-          <Heading fontSize="lg" color="white"> Remada Unilateral</Heading>
+          <Heading fontSize="lg" color="white"  fontFamily="heading"> Remada Unilateral</Heading>
           <Text color="gray.200" fontSize="sm" mt={1} numberOfLines={2}>3 séries x 12 repetições</Text>
         </VStack>
         <Icon as={Entypo} name="chevron-thin-right" color="gray.300" size={5} 	/>
