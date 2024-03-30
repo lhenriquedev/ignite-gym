@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { VStack, Image, Text, Center, Heading, ScrollView } from 'native-base'
+import { VStack, Image, Text, Center, Heading, ScrollView, useToast } from 'native-base'
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -9,6 +9,10 @@ import BackgroundImg from '@assets/background.png';
 
 import { Input } from '@components/Input';
 import { Button } from '@components/Button';
+import { api } from '@services/api';
+import { isAxiosError } from 'axios';
+import { Alert } from 'react-native';
+import { AppError } from '@utils/AppError';
 
 const formSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório'),
@@ -24,6 +28,7 @@ type FormData = z.infer<typeof formSchema>
 
 export function SignUp() {
   const navigation = useNavigation()
+  const toast = useToast()
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
     defaultValues: {
@@ -37,8 +42,16 @@ export function SignUp() {
 
   const handleGoBack = () => navigation.goBack()
 
-  const handleSignUp = (data: FormData) => {
-    console.log(data);
+  const handleSignUp = async ({ email, name, password }: FormData) => {
+    try {
+      const { data } = await api.post('/users', { name, email, password })
+      console.log(data);
+    } catch (error) {
+      const isAppError = error instanceof AppError
+      const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde.'
+
+      toast.show({ title, placement: 'top', bgColor: 'red.500' })
+    }
   }
 
   return (
@@ -82,7 +95,7 @@ export function SignUp() {
             control={control}
             name='password'
             render={({ field: { onChange, value } }) => (
-              <Input placeholder='Senha' secureTextEntry onChangeText={onChange} value={value} errorMessage={errors.password?.message}/>
+              <Input placeholder='Senha' secureTextEntry onChangeText={onChange} value={value} errorMessage={errors.password?.message} />
             )}
           />
 
