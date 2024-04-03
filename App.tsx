@@ -5,6 +5,7 @@ import { Loading } from '@components/Loading';
 
 import { THEME } from './src/themes';
 import { Routes } from './src/routes';
+import { AuthContextProvider } from '@contexts/AuthContext';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -15,7 +16,10 @@ export default function App() {
   return (
     <NativeBaseProvider theme={THEME}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      {fontsLoaded ? <Routes/> : <Loading />}
+      
+      <AuthContextProvider>
+        {fontsLoaded ? <Routes /> : <Loading />}
+      </AuthContextProvider>
     </NativeBaseProvider>
   );
 }

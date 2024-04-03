@@ -13,6 +13,8 @@ import { api } from '@services/api';
 import { isAxiosError } from 'axios';
 import { Alert } from 'react-native';
 import { AppError } from '@utils/AppError';
+import { useState } from 'react';
+import { useAuth } from '@hooks/useAuth';
 
 const formSchema = z.object({
   name: z.string().min(1, 'O nome é obrigatório'),
@@ -27,6 +29,9 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 export function SignUp() {
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { signIn } = useAuth()
   const navigation = useNavigation()
   const toast = useToast()
 
@@ -44,9 +49,12 @@ export function SignUp() {
 
   const handleSignUp = async ({ email, name, password }: FormData) => {
     try {
-      const { data } = await api.post('/users', { name, email, password })
-      console.log(data);
+      setIsLoading(true)
+      await api.post('/users', { name, email, password })
+      await signIn(email, password)
     } catch (error) {
+      setIsLoading(false)
+      
       const isAppError = error instanceof AppError
       const title = isAppError ? error.message : 'Não foi possível criar a conta. Tente novamente mais tarde.'
 
@@ -115,8 +123,10 @@ export function SignUp() {
             )}
           />
 
-          <Button title='Criar e acessar'
+          <Button
+            title='Criar e acessar'
             onPress={handleSubmit(handleSignUp)}
+            isLoading={isLoading}
           />
         </Center>
 
