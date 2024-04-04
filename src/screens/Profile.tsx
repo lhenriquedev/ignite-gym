@@ -4,6 +4,8 @@ import { TouchableOpacity } from "react-native";
 import * as ImagePicker from "expo-image-picker"
 import * as FileSystem from "expo-file-system"
 
+import defaultUserPhotoImg from '@assets/userPhotoDefault.png'
+
 import { ScreenHeader } from "@components/ScreenHeader";
 import { UserPhoto } from "@components/UserPhoto";
 import { Input } from "@components/Input";
@@ -37,7 +39,6 @@ type FormDataProps = z.infer<typeof schema>
 export function Profile() {
   const [isUpdating, setIsUpdating] = useState(false)
   const [photoIsLoading, setPhotoIsLoading] = useState(false)
-  const [userPhoto, setUserPhoto] = useState('https://github.com/lhenriquedev.png')
 
   const { user, updateUserProfile } = useAuth()
   const toast = useToast()
@@ -74,18 +75,42 @@ export function Profile() {
           })
         }
 
-        setUserPhoto(photoSeletected.assets[0].uri)
+        const fileExtension = photoSeletected.assets[0].uri.split('.').pop()
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLowerCase(),
+          uri: photoSeletected.assets[0].uri,
+          type: `${photoSeletected.assets[0].type}/${fileExtension}`
+        } as any
+
+        const userPhotoUploadForm = new FormData()
+        userPhotoUploadForm.append('avatar', photoFile)
+
+        const avatarUpdatedResponse = await api.patch('/users/avatar', userPhotoUploadForm, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+
+        const userUpdated = user
+        userUpdated.avatar = avatarUpdatedResponse.data.avatar
+
+        toast.show({
+          title: 'Foto alterada com sucesso!',
+          placement: 'top',
+          bgColor: 'green.700'
+        })
       }
     } catch (error) {
-      console.log(error)
+      const isAppError = error instanceof AppError
+      const title = isAppError ? error.message : 'Não foi possível alterar o perfil. Tente novamente mais tarde.'
+
+      toast.show({ title, placement: 'top', bgColor: 'red.500' })
     } finally {
       setPhotoIsLoading(false)
     }
   }
 
   const handleProfileUpdate = async (data: FormDataProps) => {
-    
-    
     try {
       setIsUpdating(true)
       const userUpdated = user
@@ -113,7 +138,8 @@ export function Profile() {
           {photoIsLoading ? (
             <Skeleton w={PHOTO_SIZE} h={PHOTO_SIZE} rounded="full" startColor="gray.500" endColor="gray.400" />
           ) : (
-            <UserPhoto source={{ uri: userPhoto }} size={PHOTO_SIZE} alt="Imagem do usuário" />
+            <UserPhoto source={user.avatar ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` } : defaultUserPhotoImg}
+              size={PHOTO_SIZE} alt="Imagem do usuário" />
           )}
 
           <TouchableOpacity onPress={handleUserPhotoSelect}>
@@ -192,7 +218,7 @@ export function Profile() {
             )}
           />
 
-          <Button title="Atualizar" mt={4} onPress={handleSubmit(handleProfileUpdate)} isLoading={isUpdating}/>
+          <Button title="Atualizar" mt={4} onPress={handleSubmit(handleProfileUpdate)} isLoading={isUpdating} />
         </VStack>
       </ScrollView>
     </VStack>
